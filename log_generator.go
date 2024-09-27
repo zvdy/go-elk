@@ -9,19 +9,39 @@ import (
 	"time"
 )
 
-func generateRandomLog() map[string]string {
+func generateRandomLog(r *rand.Rand) map[string]interface{} {
 	timestamp := time.Now().Format(time.RFC3339)
-	level := []string{"INFO", "WARN", "ERROR"}[rand.Intn(3)]
-	message := fmt.Sprintf("This is a %s message", level)
-	return map[string]string{
-		"timestamp": timestamp,
-		"level":     level,
-		"message":   message,
+	clientIP := fmt.Sprintf("192.168.%d.%d", r.Intn(256), r.Intn(256))
+	requestURI := fmt.Sprintf("/api/v1/resource/%d", r.Intn(100))
+	responseStatus := []int{200, 201, 400, 401, 403, 404, 500}[r.Intn(7)]
+	responseTime := r.Intn(1000) // in milliseconds
+	apiProduct := []string{"ProductA", "ProductB", "ProductC"}[r.Intn(3)]
+	org := []string{"Org1", "Org2", "Org3"}[r.Intn(3)]
+	env := []string{"Dev", "Staging", "Prod"}[r.Intn(3)]
+
+	log := map[string]interface{}{
+		"timestamp":       timestamp,
+		"client_ip":       clientIP,
+		"request_uri":     requestURI,
+		"response_status": responseStatus,
+		"response_time":   responseTime,
+		"api_product":     apiProduct,
+		"org":             org,
+		"env":             env,
 	}
+
+	if responseStatus != 200 && responseStatus != 201 {
+		faultCode := []string{"Fault1", "Fault2", "Fault3"}[r.Intn(3)]
+		faultPolicy := []string{"Policy1", "Policy2", "Policy3"}[r.Intn(3)]
+		log["fault_code"] = faultCode
+		log["fault_policy"] = faultPolicy
+	}
+
+	return log
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	elasticURL := "http://elasticsearch:9200/random_logs/_doc"
 
 	// Retry mechanism to wait for Elasticsearch to be ready
@@ -36,7 +56,7 @@ func main() {
 	}
 
 	for {
-		log := generateRandomLog()
+		log := generateRandomLog(r)
 		logJSON, err := json.Marshal(log)
 		if err != nil {
 			fmt.Println("Error marshaling log to JSON:", err)

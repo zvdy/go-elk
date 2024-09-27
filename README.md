@@ -73,6 +73,7 @@ This configuration file for Logstash specifies:
 ### Usage
 - **Generate Logs**: The [`log_generator`] service starts automatically and generates logs.
 - **View Logs in Kibana**: Access Kibana to visualize the logs by configuring an index pattern for [`random_logs`].
+- **View Logs in CLI**: You can use `curl` in order to view logs directly in the terminal `curl -X GET "localhost:9200/random_logs/_search?pretty` This will display them in a JSON format
 
 ### Troubleshooting
 - **Elasticsearch Connection Issues**: Ensure Elasticsearch is running and accessible. The [`log_generator`] includes a retry mechanism.
@@ -80,23 +81,3 @@ This configuration file for Logstash specifies:
 
 ### License
 The project is licensed under the MIT License.
-
-## Usage
-
-1. **Generate Logs**:
-    The [`log_generator`] service will automatically start generating logs and sending them to Elasticsearch.
-
-2. **View Logs in Kibana**:
-    Open Kibana at [`http://localhost:5601`] and configure an index pattern for [`random_logs`] to visualize the logs.
-
-## Troubleshooting
-
-- **Elasticsearch Connection Issues**:
-    Ensure Elasticsearch is running and accessible. The [`log_generator`] includes a retry mechanism to wait for Elasticsearch to be ready.
-
-- **Logstash Configuration**:
-    Ensure the [`logstash.conf`] file is correctly mapped and configured to process logs.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
