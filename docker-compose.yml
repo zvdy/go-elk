@@ -1,27 +1,44 @@
-version: '3'
+version: '3.7'
+
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    container_name: elasticsearch
     environment:
       - discovery.type=single-node
     ports:
       - "9200:9200"
-  logstash:
-    image: docker.elastic.co/logstash/logstash:7.10.1
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - elk
+
   kibana:
     image: docker.elastic.co/kibana/kibana:7.10.1
+    container_name: kibana
     ports:
       - "5601:5601"
-  api:
-    build:
-      context: ./go-api-proxy
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     environment:
-      - ENV_VAR1=value1
-      - ENV_VAR2=value2
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    networks:
+      - elk
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.1
+    container_name: logstash
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5044:5044"
+    networks:
+      - elk
+
+  log_generator:
+    build: .
+    container_name: log_generator
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk
+
+networks:
+  elk:
+    driver: bridge
